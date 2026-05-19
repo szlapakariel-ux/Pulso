@@ -1,41 +1,48 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEMO_PROFILES } from "../src/lib/demo";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash("123456", 10);
+  // Password de respaldo para que el login por email también funcione si se usa.
+  // El flujo demo (selector de perfil) no usa password.
+  const passwordHash = await bcrypt.hash("demo", 10);
+
+  const psyDef = DEMO_PROFILES.psychologist;
+  const p1Def = DEMO_PROFILES.patient1;
+  const p2Def = DEMO_PROFILES.patient2;
 
   const psicologo = await prisma.user.upsert({
-    where: { email: "psicologo@pulso.app" },
-    update: {},
+    where: { email: psyDef.internalEmail },
+    update: { name: psyDef.name, role: psyDef.role },
     create: {
-      name: "Dra. Ana Reyes",
-      email: "psicologo@pulso.app",
+      name: psyDef.name,
+      email: psyDef.internalEmail,
       passwordHash,
-      role: "PSYCHOLOGIST",
+      role: psyDef.role,
     },
   });
 
   const paciente1 = await prisma.user.upsert({
-    where: { email: "paciente@pulso.app" },
-    update: {},
+    where: { email: p1Def.internalEmail },
+    update: { name: p1Def.name, role: p1Def.role },
     create: {
-      name: "Juan Pérez",
-      email: "paciente@pulso.app",
+      name: p1Def.name,
+      email: p1Def.internalEmail,
       passwordHash,
-      role: "PATIENT",
+      role: p1Def.role,
     },
   });
 
   const paciente2 = await prisma.user.upsert({
-    where: { email: "paciente2@pulso.app" },
-    update: {},
+    where: { email: p2Def.internalEmail },
+    update: { name: p2Def.name, role: p2Def.role },
     create: {
-      name: "María Gómez",
-      email: "paciente2@pulso.app",
+      name: p2Def.name,
+      email: p2Def.internalEmail,
       passwordHash,
-      role: "PATIENT",
+      role: p2Def.role,
     },
   });
 
@@ -50,7 +57,6 @@ async function main() {
     create: { userId: paciente2.id, psychologistId: psicologo.id },
   });
 
-  // Registros ficticios (mediaKey ficticias; los archivos reales se suben desde la app)
   const existing = await prisma.timelineEntry.count();
   if (existing === 0) {
     const seedEntries = [
@@ -87,16 +93,17 @@ async function main() {
         data: {
           entryId: entry.id,
           psychologistId: psicologo.id,
-          content: "Nota privada de ejemplo — solo visible para la psicóloga.",
+          content: "Nota privada de ejemplo — solo visible para el psicólogo.",
         },
       });
     }
   }
 
-  console.log("Seed listo:");
-  console.log("  Psicóloga: psicologo@pulso.app / 123456");
-  console.log("  Paciente:  paciente@pulso.app  / 123456");
-  console.log("  Paciente:  paciente2@pulso.app / 123456");
+  console.log("Seed listo. Perfiles demo (login por selector):");
+  console.log("  - Diego Vivero (PSYCHOLOGIST)");
+  console.log("  - Paciente Demo 1 (PATIENT)");
+  console.log("  - Paciente Demo 2 (PATIENT)");
+  console.log("  Email visible en la UI: diego.vivero@trenesargentinos.gob.ar");
 }
 
 main()

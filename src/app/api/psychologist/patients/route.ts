@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { handle } from "@/lib/http";
+import { DEMO_DISPLAY_EMAIL } from "@/lib/demo";
 
 export async function GET() {
   try {
@@ -14,7 +15,7 @@ export async function GET() {
       patients: patients.map((p) => ({
         id: p.user.id,
         name: p.user.name,
-        email: p.user.email,
+        email: DEMO_DISPLAY_EMAIL,
       })),
     });
   } catch (err) {

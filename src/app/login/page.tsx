@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { readSession } from "@/lib/auth";
-import LoginForm from "./login-form";
+import { DEMO_DISPLAY_EMAIL } from "@/lib/demo";
+import DemoSelector from "./demo-selector";
 
 export default async function LoginPage() {
   const session = await readSession();
@@ -12,7 +13,15 @@ export default async function LoginPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Pulso</h1>
           <p className="mt-2 text-pulso-soft">Acompañamiento entre sesiones</p>
         </div>
-        <LoginForm />
+        <div className="card space-y-3">
+          <p className="text-sm text-pulso-soft">
+            Demo · elegí un perfil para ingresar.
+          </p>
+          <p className="text-xs text-pulso-soft">
+            Email demo: <span className="font-mono">{DEMO_DISPLAY_EMAIL}</span>
+          </p>
+          <DemoSelector />
+        </div>
       </div>
     </main>
   );

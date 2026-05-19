@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { presignDownload } from "@/lib/s3";
 import { groupByDay, formatTime } from "@/lib/dates";
+import { DEMO_DISPLAY_EMAIL } from "@/lib/demo";
 import EntryControls from "./entry-controls";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export default async function PatientTimelinePage({
           ← Pacientes
         </Link>
         <h2 className="text-2xl font-semibold mt-2">{profile.user.name}</h2>
-        <p className="text-pulso-soft text-sm">{profile.user.email}</p>
+        <p className="text-pulso-soft text-sm">{DEMO_DISPLAY_EMAIL}</p>
       </div>
 
       {groups.length === 0 && (

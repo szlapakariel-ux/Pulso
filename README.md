@@ -31,13 +31,23 @@ npm run dev
 
 Abrir `http://localhost:3000`.
 
-### Usuarios de prueba (después del seed)
+### Accesos demo (después del seed)
 
-| Rol         | Email                  | Password |
-|-------------|------------------------|----------|
-| Psicóloga   | `psicologo@pulso.app`  | `123456` |
-| Paciente 1  | `paciente@pulso.app`   | `123456` |
-| Paciente 2  | `paciente2@pulso.app`  | `123456` |
+El login es por **selector de perfil** (no email/password). En `/login`
+aparecen tres botones que crean sesión directamente contra el perfil demo
+correspondiente.
+
+| Botón                          | Nombre interno     | Rol           |
+|--------------------------------|--------------------|---------------|
+| Entrar como psicólogo          | Diego Vivero       | `PSYCHOLOGIST`|
+| Entrar como paciente demo 1    | Paciente Demo 1    | `PATIENT`     |
+| Entrar como paciente demo 2    | Paciente Demo 2    | `PATIENT`     |
+
+**Email visible en toda la UI:** `diego.vivero@trenesargentinos.gob.ar`
+
+> El email visible es **cosmético**. Internamente cada perfil tiene un email
+> único (constraint `@unique` en Prisma) y un `id` distinto. Los permisos se
+> validan por `user.id` y `user.role`, nunca por el email visible.
 
 > Los registros de seed apuntan a `mediaKey` ficticias: aparecen en la timeline,
 > pero la reproducción solo funciona con archivos subidos desde la app a R2/S3.
@@ -177,7 +187,7 @@ POST  /api/psychologist/entries/:entryId/transcription-request
 
 ## Probar paciente
 
-1. Login con `paciente@pulso.app / 123456`.
+1. En `/login` tocar **Entrar como paciente demo 1** (o demo 2).
 2. Tocar **+ Nuevo registro**.
 3. Poner título, elegir Audio o Video, adjuntar/grabar.
 4. Guardar → vuelve a `/patient/timeline` con el registro recién creado.
@@ -185,7 +195,7 @@ POST  /api/psychologist/entries/:entryId/transcription-request
 
 ## Probar psicólogo
 
-1. Login con `psicologo@pulso.app / 123456`.
+1. En `/login` tocar **Entrar como psicólogo**.
 2. Ver lista de pacientes.
 3. Entrar a la timeline de un paciente.
 4. Agregar una nota privada → aparece solo en este panel.
