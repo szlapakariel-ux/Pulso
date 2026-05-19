@@ -51,7 +51,11 @@ export default async function PatientTimelinePage() {
                   </div>
                 </div>
                 <div className="mt-3">
-                  {e.mediaType === "AUDIO" ? (
+                  {!e.mediaUrl ? (
+                    <p className="text-sm text-pulso-soft italic">
+                      Almacenamiento no configurado todavía.
+                    </p>
+                  ) : e.mediaType === "AUDIO" ? (
                     <audio controls preload="none" src={e.mediaUrl} className="w-full" />
                   ) : (
                     <video controls preload="none" src={e.mediaUrl} className="w-full rounded-lg" />

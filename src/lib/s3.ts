@@ -32,9 +32,10 @@ export async function presignUpload(key: string, contentType: string, expiresIn 
   return getSignedUrl(client(), cmd, { expiresIn });
 }
 
-export async function presignDownload(key: string, expiresIn = 60 * 60) {
+export async function presignDownload(key: string, expiresIn = 60 * 60): Promise<string | null> {
   const base = process.env.S3_PUBLIC_BASE_URL;
   if (base) return `${base.replace(/\/$/, "")}/${key}`;
+  if (!isS3Configured()) return null;
   const cmd = new GetObjectCommand({ Bucket: bucket(), Key: key });
   return getSignedUrl(client(), cmd, { expiresIn });
 }
