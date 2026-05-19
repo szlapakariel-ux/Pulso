@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PATIENT
+  PSYCHOLOGIST
+}
+
+enum MediaType {
+  AUDIO
+  VIDEO
+}
+
+enum TranscriptionStatus {
+  NOT_REQUESTED
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patientProfile      PatientProfile?  @relation("UserPatientProfile")
+  patientsAsPsych     PatientProfile[] @relation("PsychPatients")
+  entriesAsPatient    TimelineEntry[]  @relation("EntriesAsPatient")
+  entriesAsPsych      TimelineEntry[]  @relation("EntriesAsPsych")
+  notes               PrivateNote[]
+  transcriptRequests  Transcription[]
+}
+
+model PatientProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  psychologistId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User @relation("UserPatientProfile", fields: [userId], references: [id], onDelete: Cascade)
+  psychologist User @relation("PsychPatients", fields: [psychologistId], references: [id])
+
+  @@index([psychologistId])
+}
+
+model TimelineEntry {
+  id             String    @id @default(cuid())
+  patientId      String
+  psychologistId String
+  title          String
+  mediaType      MediaType
+  mediaKey       String
+  mediaUrl       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  patient       User           @relation("EntriesAsPatient", fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist  User           @relation("EntriesAsPsych", fields: [psychologistId], references: [id])
+  notes         PrivateNote[]
+  transcription Transcription?
+
+  @@index([patientId, createdAt])
+  @@index([psychologistId, createdAt])
+}
+
+model PrivateNote {
+  id             String   @id @default(cuid())
+  entryId        String
+  psychologistId String
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  entry        TimelineEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  psychologist User          @relation(fields: [psychologistId], references: [id])
+
+  @@index([entryId])
+}
+
+model Transcription {
+  id            String              @id @default(cuid())
+  entryId       String              @unique
+  requestedById String
+  status        TranscriptionStatus @default(NOT_REQUESTED)
+  text          String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  entry       TimelineEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  requestedBy User          @relation(fields: [requestedById], references: [id])
+}
