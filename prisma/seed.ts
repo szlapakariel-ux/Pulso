@@ -100,10 +100,9 @@ async function main() {
   }
 
   console.log("Seed listo. Perfiles demo (login por selector):");
-  console.log("  - Diego Vivero (PSYCHOLOGIST)");
+  console.log("  - Psicóloga Demo (PSYCHOLOGIST)");
   console.log("  - Paciente Demo 1 (PATIENT)");
   console.log("  - Paciente Demo 2 (PATIENT)");
-  console.log("  Email visible en la UI: diego.vivero@trenesargentinos.gob.ar");
 }
 
 main()

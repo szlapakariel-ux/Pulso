@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { readSession } from "@/lib/auth";
-import { DEMO_DISPLAY_EMAIL } from "@/lib/demo";
 import DemoSelector from "./demo-selector";
 
 export default async function LoginPage() {
@@ -16,9 +15,6 @@ export default async function LoginPage() {
         <div className="card space-y-3">
           <p className="text-sm text-pulso-soft">
             Demo · elegí un perfil para ingresar.
-          </p>
-          <p className="text-xs text-pulso-soft">
-            Email demo: <span className="font-mono">{DEMO_DISPLAY_EMAIL}</span>
           </p>
           <DemoSelector />
         </div>

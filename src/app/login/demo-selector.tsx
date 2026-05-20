@@ -41,11 +41,12 @@ export default function DemoSelector() {
             disabled={loading !== null}
             className={
               key === "psychologist"
-                ? "btn-primary w-full disabled:opacity-60"
-                : "btn-ghost w-full disabled:opacity-60"
+                ? "btn-primary w-full disabled:opacity-60 flex flex-col items-center gap-0.5"
+                : "btn-ghost w-full disabled:opacity-60 flex flex-col items-center gap-0.5"
             }
           >
-            {isLoading ? "Ingresando…" : def.label}
+            <span>{isLoading ? "Ingresando…" : def.label}</span>
+            <span className="text-xs font-mono opacity-70">{def.displayEmail}</span>
           </button>
         );
       })}

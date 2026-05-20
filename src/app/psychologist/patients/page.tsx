@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
-import { DEMO_DISPLAY_EMAIL } from "@/lib/demo";
+import { displayEmailFor } from "@/lib/demo";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export default async function PatientsListPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium">{p.user.name}</h3>
-                <p className="text-sm text-pulso-soft">{DEMO_DISPLAY_EMAIL}</p>
+                <p className="text-sm text-pulso-soft">{displayEmailFor(p.user.email)}</p>
               </div>
               <span className="text-sm text-pulso-soft">
                 {countMap.get(p.user.id) ?? 0} registros

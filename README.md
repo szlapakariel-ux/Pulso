@@ -37,17 +37,15 @@ El login es por **selector de perfil** (no email/password). En `/login`
 aparecen tres botones que crean sesión directamente contra el perfil demo
 correspondiente.
 
-| Botón                          | Nombre interno     | Rol           |
-|--------------------------------|--------------------|---------------|
-| Entrar como psicólogo          | Diego Vivero       | `PSYCHOLOGIST`|
-| Entrar como paciente demo 1    | Paciente Demo 1    | `PATIENT`     |
-| Entrar como paciente demo 2    | Paciente Demo 2    | `PATIENT`     |
-
-**Email visible en toda la UI:** `diego.vivero@trenesargentinos.gob.ar`
+| Botón                          | Nombre              | Email visible                  | Rol            |
+|--------------------------------|---------------------|--------------------------------|----------------|
+| Entrar como psicóloga demo     | Psicóloga Demo      | `psicologa.demo@pulso.local`   | `PSYCHOLOGIST` |
+| Entrar como paciente demo 1    | Paciente Demo 1     | `paciente1.demo@pulso.local`   | `PATIENT`      |
+| Entrar como paciente demo 2    | Paciente Demo 2     | `paciente2.demo@pulso.local`   | `PATIENT`      |
 
 > El email visible es **cosmético**. Internamente cada perfil tiene un email
-> único (constraint `@unique` en Prisma) y un `id` distinto. Los permisos se
-> validan por `user.id` y `user.role`, nunca por el email visible.
+> único distinto (constraint `@unique` en Prisma) y un `id` distinto. Los
+> permisos se validan por `user.id` y `user.role`, nunca por el email visible.
 
 > Los registros de seed apuntan a `mediaKey` ficticias: aparecen en la timeline,
 > pero la reproducción solo funciona con archivos subidos desde la app a R2/S3.
