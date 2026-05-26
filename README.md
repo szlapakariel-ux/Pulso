@@ -87,16 +87,37 @@ npx prisma validate
 
 - Crear bucket privado.
 - Crear access key.
-- Configurar CORS para permitir PUT desde el dominio de la app:
+- Configurar CORS del bucket. El flujo es **subida directa con URL firmada**:
+  el navegador hace `PUT` a la URL firmada con `Content-Type` del archivo
+  (ej. `audio/ogg`), lo que dispara un preflight `OPTIONS`. El bucket debe
+  permitir explícitamente el origin de la app y el header `Content-Type`.
+
+  Origin de producción: `https://pulso-production-ad5d.up.railway.app`
+
   ```json
   [
     {
-      "AllowedOrigins": ["https://<tu-dominio>"],
-      "AllowedMethods": ["PUT", "GET"],
-      "AllowedHeaders": ["*"]
+      "AllowedOrigins": [
+        "https://pulso-production-ad5d.up.railway.app",
+        "http://localhost:3000"
+      ],
+      "AllowedMethods": ["PUT", "GET", "HEAD"],
+      "AllowedHeaders": ["Content-Type"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3000
     }
   ]
   ```
+
+  Notas:
+  - El `AllowedOrigins` debe coincidir **exacto** (sin slash final) con
+    `window.location.origin` desde el que se sirve la app.
+  - El `Content-Type` enviado en el `PUT` (ej. `audio/ogg`, `audio/webm`,
+    `video/mp4`) tiene que coincidir con el que se firmó en `presignUpload`;
+    el código ya envía el mismo valor del archivo (`file.type`).
+  - Si agregás un dominio propio (CNAME en Railway o Vercel), sumalo al
+    array de `AllowedOrigins`.
+
 - Si el bucket es público, definir `S3_PUBLIC_BASE_URL` (las descargas serán directas).
   Si es privado, dejarla vacía y se usarán URLs firmadas de lectura.
 
