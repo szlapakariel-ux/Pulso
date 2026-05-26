@@ -43,12 +43,9 @@ export default async function PatientTimelinePage() {
             {g.items.map((e) => (
               <article key={e.id} className="card">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h4 className="font-medium">{e.title}</h4>
-                    <p className="text-sm text-pulso-soft mt-0.5">
-                      {e.mediaType === "AUDIO" ? "Audio" : "Video"} · {formatTime(e.createdAt)}
-                    </p>
-                  </div>
+                  <p className="text-sm text-pulso-soft">
+                    {e.mediaType === "AUDIO" ? "Audio" : "Video"} · {formatTime(e.createdAt)}
+                  </p>
                 </div>
                 <div className="mt-3">
                   {!e.mediaUrl ? (
