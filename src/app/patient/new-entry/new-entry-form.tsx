@@ -26,46 +26,75 @@ export default function NewEntryForm() {
     if (!title.trim()) return setError("Poné un título breve");
     if (!file) return setError("Adjuntá un audio o video");
     setLoading(true);
+    const isDev = process.env.NODE_ENV !== "production";
+    let stage: "init" | "upload" | "complete" = "init";
     try {
       setProgress("Preparando subida…");
-      const initRes = await fetch("/api/patient/entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "init",
-          title,
-          mediaType,
-          contentType: file.type,
-          sizeBytes: file.size,
-        }),
-      });
+      let initRes: Response;
+      try {
+        initRes = await fetch("/api/patient/entries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "init",
+            title,
+            mediaType,
+            contentType: file.type,
+            sizeBytes: file.size,
+          }),
+        });
+      } catch {
+        throw new Error("No se pudo contactar el servidor para iniciar la subida.");
+      }
+      if (isDev) console.debug("[upload] init status", initRes.status);
       const initData = await initRes.json();
       if (!initRes.ok) throw new Error(initData.error || "No se pudo iniciar la subida");
 
+      stage = "upload";
       setProgress("Subiendo archivo…");
-      const putRes = await fetch(initData.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!putRes.ok) throw new Error("Falló la subida del archivo");
+      let putRes: Response;
+      try {
+        putRes = await fetch(initData.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+      } catch {
+        throw new Error(
+          "No se pudo subir el archivo al almacenamiento. Probable CORS del bucket R2/S3 o URL firmada inválida.",
+        );
+      }
+      if (isDev) console.debug("[upload] PUT status", putRes.status);
+      if (!putRes.ok) {
+        throw new Error(
+          `No se pudo subir el archivo al almacenamiento (HTTP ${putRes.status}). Probable CORS del bucket R2/S3 o URL firmada inválida.`,
+        );
+      }
 
+      stage = "complete";
       setProgress("Guardando…");
-      const doneRes = await fetch("/api/patient/entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "complete",
-          title,
-          mediaType,
-          mediaKey: initData.key,
-        }),
-      });
+      let doneRes: Response;
+      try {
+        doneRes = await fetch("/api/patient/entries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "complete",
+            title,
+            mediaType,
+            mediaKey: initData.key,
+          }),
+        });
+      } catch {
+        throw new Error("No se pudo confirmar el guardado con el servidor.");
+      }
+      if (isDev) console.debug("[upload] complete status", doneRes.status);
       const doneData = await doneRes.json();
       if (!doneRes.ok) throw new Error(doneData.error || "No se pudo guardar el registro");
       router.replace("/patient/timeline");
       router.refresh();
     } catch (err) {
+      if (isDev) console.debug("[upload] failed at stage", stage);
       setError(err instanceof Error ? err.message : "Error");
     } finally {
       setLoading(false);
