@@ -85,18 +85,34 @@ npx prisma validate
 
 ### Almacenamiento (Cloudflare R2 o S3)
 
-- Crear bucket privado.
+- Crear bucket privado. Bucket de producción: **`pulso-media`**.
 - Crear access key.
-- Configurar CORS para permitir PUT desde el dominio de la app:
+- Configurar CORS del bucket. El flujo es subida directa con URL firmada:
+  el navegador hace `PUT` a la URL firmada con el `Content-Type` del archivo
+  (ej. `audio/ogg`, `video/mp4`), lo que dispara un preflight `OPTIONS`. El
+  bucket debe permitir explícitamente el origin de la app.
+
+  Policy CORS de referencia (también en `docs/storage-r2-cors.md`):
+
   ```json
   [
     {
-      "AllowedOrigins": ["https://<tu-dominio>"],
-      "AllowedMethods": ["PUT", "GET"],
-      "AllowedHeaders": ["*"]
+      "AllowedOrigins": [
+        "https://pulso-production-ad5d.up.railway.app",
+        "http://localhost:3000"
+      ],
+      "AllowedMethods": ["PUT", "GET", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3600
     }
   ]
   ```
+
+  El `AllowedOrigins` debe coincidir **exacto**, sin barra final ni path.
+  Detalle completo del procedimiento, diagnóstico y checklist:
+  [`docs/storage-r2-cors.md`](docs/storage-r2-cors.md).
+
 - Si el bucket es público, definir `S3_PUBLIC_BASE_URL` (las descargas serán directas).
   Si es privado, dejarla vacía y se usarán URLs firmadas de lectura.
 
