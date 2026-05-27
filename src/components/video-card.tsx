@@ -23,21 +23,24 @@ export default function VideoCard({ src }: { src: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="relative block w-full overflow-hidden rounded-lg bg-black aspect-video group"
         aria-label="Ver video"
+        className="w-full flex items-center gap-3 rounded-lg border border-pulso-mute bg-pulso-bg/60 px-3 py-2 text-left hover:border-pulso-accent transition-colors"
       >
-        <video
-          src={src}
-          preload="metadata"
-          muted
-          playsInline
-          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition"
-        />
-        <span className="absolute inset-0 flex items-center justify-center">
-          <span className="rounded-full bg-white/90 text-pulso-bg px-4 py-2 text-sm font-medium shadow">
-            ▶ Ver video
-          </span>
+        <span className="flex h-10 w-14 shrink-0 items-center justify-center rounded bg-black/80 text-white">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
         </span>
+        <span className="flex-1 text-sm">
+          <span className="block font-medium">Video</span>
+          <span className="block text-xs text-pulso-soft">Tocá para reproducir</span>
+        </span>
+        <span className="text-xs text-pulso-soft underline">Ver</span>
       </button>
 
       {open && (
