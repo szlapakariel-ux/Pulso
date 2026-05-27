@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth";
+import { requireRolePage } from "@/lib/auth";
 import { displayEmailFor } from "@/lib/demo";
 
 export const dynamic = "force-dynamic";
 
 export default async function PatientsListPage() {
-  const user = await requireRole("PSYCHOLOGIST");
+  const user = await requireRolePage("PSYCHOLOGIST");
   const patients = await prisma.patientProfile.findMany({
     where: { psychologistId: user.id },
     include: {

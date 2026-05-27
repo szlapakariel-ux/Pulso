@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth";
+import { requireRolePage } from "@/lib/auth";
 import { presignDownload } from "@/lib/s3";
 import { groupByDay, formatDateTime } from "@/lib/dates";
 import { displayEmailFor } from "@/lib/demo";
@@ -15,7 +15,7 @@ export default async function PatientTimelinePage({
 }: {
   params: { patientId: string };
 }) {
-  const user = await requireRole("PSYCHOLOGIST");
+  const user = await requireRolePage("PSYCHOLOGIST");
   const profile = await prisma.patientProfile.findUnique({
     where: { userId: params.patientId },
     include: { user: { select: { name: true, email: true } } },

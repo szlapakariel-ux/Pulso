@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth";
+import { requireRolePage } from "@/lib/auth";
 import SettingsForm from "./settings-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function PsychologistSettingsPage() {
-  const user = await requireRole("PSYCHOLOGIST");
+  const user = await requireRolePage("PSYCHOLOGIST");
   const settings = await prisma.dailySummarySettings.findUnique({
     where: { psychologistId: user.id },
   });
