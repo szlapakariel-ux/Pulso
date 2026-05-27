@@ -73,18 +73,6 @@ export default async function PatientTimelinePage({
                       “{e.contextNote}”
                     </p>
                   )}
-                  {e.aiTitle && (
-                    <p className="text-sm mt-1">
-                      <span className="text-pulso-soft">Título sugerido:</span>{" "}
-                      <span className="font-medium">{e.aiTitle}</span>
-                    </p>
-                  )}
-                  {e.aiSummary && (
-                    <p className="text-sm mt-1">
-                      <span className="text-pulso-soft">Resumen de lo dicho:</span>{" "}
-                      {e.aiSummary}
-                    </p>
-                  )}
                 </header>
                 {!e.mediaUrl ? (
                   <p className="text-sm text-pulso-soft italic">
@@ -107,6 +95,11 @@ export default async function PatientTimelinePage({
                       ? { status: e.transcription.status, text: e.transcription.text }
                       : null
                   }
+                  initialAi={{
+                    status: e.aiStatus,
+                    title: e.aiTitle,
+                    summary: e.aiSummary,
+                  }}
                 />
               </article>
             ))}
