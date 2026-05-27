@@ -24,6 +24,19 @@ enum TranscriptionStatus {
   FAILED
 }
 
+enum AiStatus {
+  NOT_REQUESTED
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum SummaryChannel {
+  MANUAL
+  WHATSAPP
+  EMAIL
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -33,12 +46,13 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  patientProfile      PatientProfile?  @relation("UserPatientProfile")
-  patientsAsPsych     PatientProfile[] @relation("PsychPatients")
-  entriesAsPatient    TimelineEntry[]  @relation("EntriesAsPatient")
-  entriesAsPsych      TimelineEntry[]  @relation("EntriesAsPsych")
-  notes               PrivateNote[]
-  transcriptRequests  Transcription[]
+  patientProfile       PatientProfile?       @relation("UserPatientProfile")
+  patientsAsPsych      PatientProfile[]      @relation("PsychPatients")
+  entriesAsPatient     TimelineEntry[]       @relation("EntriesAsPatient")
+  entriesAsPsych       TimelineEntry[]       @relation("EntriesAsPsych")
+  notes                PrivateNote[]
+  transcriptRequests   Transcription[]
+  dailySummarySettings DailySummarySettings?
 }
 
 model PatientProfile {
@@ -62,6 +76,12 @@ model TimelineEntry {
   mediaType      MediaType
   mediaKey       String
   mediaUrl       String?
+  recordedAt     DateTime?
+  contextLabel   String?
+  contextNote    String?
+  aiTitle        String?
+  aiSummary      String?
+  aiStatus       AiStatus  @default(NOT_REQUESTED)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -99,4 +119,17 @@ model Transcription {
 
   entry       TimelineEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   requestedBy User          @relation(fields: [requestedById], references: [id])
+}
+
+model DailySummarySettings {
+  id             String         @id @default(cuid())
+  psychologistId String         @unique
+  channel        SummaryChannel @default(MANUAL)
+  sendTime       String         @default("08:00")
+  timezone       String         @default("America/Argentina/Buenos_Aires")
+  enabled        Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  psychologist User @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 }

@@ -9,22 +9,42 @@ const MAX_MB = Number(process.env.MAX_UPLOAD_MB || 100);
 const ALLOWED_AUDIO = ["audio/webm", "audio/mpeg", "audio/mp4", "audio/ogg", "audio/wav"];
 const ALLOWED_VIDEO = ["video/webm", "video/mp4", "video/quicktime", "video/ogg"];
 
+const ContextLabel = z
+  .enum(["Casa", "Trabajo", "Tren", "Auto", "Calle", "Antes de dormir", "Otro"])
+  .optional();
+
 const InitBody = z.object({
   action: z.literal("init"),
-  title: z.string().min(1).max(120),
   mediaType: z.enum(["AUDIO", "VIDEO"]),
   contentType: z.string().min(1),
   sizeBytes: z.number().int().positive(),
+  recordedAt: z.string().datetime().optional(),
+  contextLabel: ContextLabel,
+  contextNote: z.string().max(280).optional(),
 });
 
 const CompleteBody = z.object({
   action: z.literal("complete"),
-  title: z.string().min(1).max(120),
   mediaType: z.enum(["AUDIO", "VIDEO"]),
   mediaKey: z.string().min(1),
+  recordedAt: z.string().datetime().optional(),
+  contextLabel: ContextLabel,
+  contextNote: z.string().max(280).optional(),
 });
 
 const Body = z.union([InitBody, CompleteBody]);
+
+function buildInternalTitle(
+  mediaType: "AUDIO" | "VIDEO",
+  contextLabel: string | undefined,
+  when: Date,
+): string {
+  const hh = String(when.getHours()).padStart(2, "0");
+  const mm = String(when.getMinutes()).padStart(2, "0");
+  const kind = mediaType === "AUDIO" ? "Audio" : "Video";
+  const ctx = contextLabel ? ` · ${contextLabel}` : "";
+  return `${kind}${ctx} · ${hh}:${mm}`;
+}
 
 export async function POST(req: Request) {
   try {
@@ -37,7 +57,7 @@ export async function POST(req: Request) {
     if (!parsed.success) throw new HttpError(400, "Datos inválidos");
 
     if (parsed.data.action === "init") {
-      const { title, mediaType, contentType, sizeBytes } = parsed.data;
+      const { mediaType, contentType, sizeBytes } = parsed.data;
       const allowed = mediaType === "AUDIO" ? ALLOWED_AUDIO : ALLOWED_VIDEO;
       if (!allowed.includes(contentType)) throw new HttpError(400, "Tipo de archivo no permitido");
       if (sizeBytes > MAX_MB * 1024 * 1024) {
@@ -49,20 +69,25 @@ export async function POST(req: Request) {
       const ext = contentType.split("/")[1]?.split(";")[0] || "bin";
       const key = `patients/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const uploadUrl = await presignUpload(key, contentType);
-      return NextResponse.json({ uploadUrl, key, title });
+      return NextResponse.json({ uploadUrl, key });
     }
 
-    const { title, mediaType, mediaKey } = parsed.data;
+    const { mediaType, mediaKey, recordedAt, contextLabel, contextNote } = parsed.data;
     if (!mediaKey.startsWith(`patients/${user.id}/`)) {
       throw new HttpError(403, "Key inválida");
     }
+    const when = recordedAt ? new Date(recordedAt) : new Date();
+    const title = buildInternalTitle(mediaType, contextLabel, when);
     const entry = await prisma.timelineEntry.create({
       data: {
         patientId: user.id,
         psychologistId: profile.psychologistId,
-        title: title.trim(),
+        title,
         mediaType,
         mediaKey,
+        recordedAt: when,
+        contextLabel: contextLabel ?? null,
+        contextNote: contextNote?.trim() || null,
       },
     });
     return NextResponse.json({ id: entry.id });
