@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { presignDownload } from "@/lib/s3";
-import { groupByDay, formatTime } from "@/lib/dates";
+import { groupByDay, formatDateTime } from "@/lib/dates";
+import VideoCard from "@/components/video-card";
 
 export const dynamic = "force-dynamic";
 
@@ -10,12 +11,16 @@ export default async function PatientTimelinePage() {
   const user = await requireRole("PATIENT");
   const entries = await prisma.timelineEntry.findMany({
     where: { patientId: user.id },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ recordedAt: "desc" }, { createdAt: "desc" }],
   });
   const withUrls = await Promise.all(
-    entries.map(async (e) => ({ ...e, mediaUrl: await presignDownload(e.mediaKey) })),
+    entries.map(async (e) => ({
+      ...e,
+      when: e.recordedAt ?? e.createdAt,
+      mediaUrl: await presignDownload(e.mediaKey),
+    })),
   );
-  const groups = groupByDay(withUrls);
+  const groups = groupByDay(withUrls.map((e) => ({ ...e, createdAt: e.when })));
 
   return (
     <div className="space-y-6">
@@ -41,16 +46,25 @@ export default async function PatientTimelinePage() {
           <h3 className="text-sm uppercase tracking-wide text-pulso-soft">{g.label}</h3>
           <div className="space-y-3">
             {g.items.map((e) => (
-              <article key={e.id} className="card">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h4 className="font-medium">{e.title}</h4>
-                    <p className="text-sm text-pulso-soft mt-0.5">
-                      {e.mediaType === "AUDIO" ? "Audio" : "Video"} · {formatTime(e.createdAt)}
+              <article key={e.id} className="card space-y-3">
+                <div>
+                  <p className="text-sm text-pulso-soft">
+                    {e.mediaType === "AUDIO" ? "Audio" : "Video"} ·{" "}
+                    {formatDateTime(e.when)}
+                  </p>
+                  {e.contextLabel && (
+                    <p className="text-sm mt-0.5">
+                      Contexto:{" "}
+                      <span className="font-medium">{e.contextLabel}</span>
                     </p>
-                  </div>
+                  )}
+                  {e.contextNote && (
+                    <p className="text-sm text-pulso-soft italic mt-0.5">
+                      “{e.contextNote}”
+                    </p>
+                  )}
                 </div>
-                <div className="mt-3">
+                <div>
                   {!e.mediaUrl ? (
                     <p className="text-sm text-pulso-soft italic">
                       Almacenamiento no configurado todavía.
@@ -58,7 +72,7 @@ export default async function PatientTimelinePage() {
                   ) : e.mediaType === "AUDIO" ? (
                     <audio controls preload="none" src={e.mediaUrl} className="w-full" />
                   ) : (
-                    <video controls preload="none" src={e.mediaUrl} className="w-full rounded-lg" />
+                    <VideoCard src={e.mediaUrl} />
                   )}
                 </div>
               </article>

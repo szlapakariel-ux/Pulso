@@ -15,6 +15,9 @@ export default async function PsychologistLayout({ children }: { children: React
             Pulso · Panel
           </Link>
           <div className="flex items-center gap-3 text-sm text-pulso-soft">
+            <Link href="/psychologist/settings" className="hover:underline">
+              Configuración
+            </Link>
             <span className="hidden sm:inline">{session.name}</span>
             <LogoutButton />
           </div>
