@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth";
+import { requireRolePage } from "@/lib/auth";
 import { presignDownload } from "@/lib/s3";
 import { groupByDay, formatDateTime } from "@/lib/dates";
 import VideoCard from "@/components/video-card";
@@ -8,7 +8,7 @@ import VideoCard from "@/components/video-card";
 export const dynamic = "force-dynamic";
 
 export default async function PatientTimelinePage() {
-  const user = await requireRole("PATIENT");
+  const user = await requireRolePage("PATIENT");
   const entries = await prisma.timelineEntry.findMany({
     where: { patientId: user.id },
     orderBy: [{ recordedAt: "desc" }, { createdAt: "desc" }],

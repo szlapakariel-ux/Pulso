@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -78,4 +79,22 @@ export class HttpError extends Error {
   constructor(public status: number, message: string) {
     super(message);
   }
+}
+
+function homeForRole(role: Role): string {
+  return role === "PATIENT" ? "/patient/timeline" : "/psychologist/patients";
+}
+
+/**
+ * For Server Components / pages: redirige en vez de tirar HttpError.
+ * - sin sesión -> /login
+ * - rol distinto -> home del rol real
+ */
+export async function requireRolePage(role: Role) {
+  const session = await readSession();
+  if (!session) redirect("/login");
+  if (session.role !== role) redirect(homeForRole(session.role));
+  const user = await prisma.user.findUnique({ where: { id: session.sub } });
+  if (!user) redirect("/login");
+  return user;
 }
