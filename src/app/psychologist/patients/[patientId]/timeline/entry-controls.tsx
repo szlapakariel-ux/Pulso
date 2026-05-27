@@ -61,13 +61,17 @@ export default function EntryControls({
   async function requestTrans() {
     setRequestingTrans(true);
     setError(null);
+    setTrans((prev) => ({ status: "PENDING", text: prev?.text ?? null }));
     try {
       const res = await fetch(
         `/api/psychologist/entries/${entryId}/transcription-request`,
         { method: "POST" },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo solicitar");
+      if (!res.ok) {
+        setTrans((prev) => ({ status: "FAILED", text: prev?.text ?? null }));
+        throw new Error(data.error || "No se pudo solicitar");
+      }
       setTrans({ status: data.status, text: data.text ?? null });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
@@ -103,7 +107,7 @@ export default function EntryControls({
 
   const transLabel = (() => {
     if (!trans || trans.status === "NOT_REQUESTED") return "Sin solicitar";
-    if (trans.status === "PENDING") return "Transcripción pendiente de configuración";
+    if (trans.status === "PENDING") return "Transcribiendo…";
     if (trans.status === "FAILED") return "Falló la transcripción";
     return "Completada";
   })();
