@@ -3,22 +3,37 @@
 import { useState } from "react";
 
 type Note = { id: string; content: string; createdAt: string };
-type Trans = { status: "NOT_REQUESTED" | "PENDING" | "COMPLETED" | "FAILED"; text: string | null } | null;
+type Trans = {
+  status: "NOT_REQUESTED" | "PENDING" | "COMPLETED" | "FAILED";
+  text: string | null;
+} | null;
+
+type AiStatus = "NOT_REQUESTED" | "PENDING" | "COMPLETED" | "FAILED";
+
+type AiState = {
+  status: AiStatus;
+  title: string | null;
+  summary: string | null;
+};
 
 export default function EntryControls({
   entryId,
   initialNotes,
   initialTranscription,
+  initialAi,
 }: {
   entryId: string;
   initialNotes: Note[];
   initialTranscription: Trans;
+  initialAi: AiState;
 }) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [draft, setDraft] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [trans, setTrans] = useState<Trans>(initialTranscription);
   const [requestingTrans, setRequestingTrans] = useState(false);
+  const [ai, setAi] = useState<AiState>(initialAi);
+  const [generatingAi, setGeneratingAi] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function saveNote(e: React.FormEvent) {
@@ -61,12 +76,39 @@ export default function EntryControls({
     }
   }
 
+  async function generateAi() {
+    setGeneratingAi(true);
+    setError(null);
+    setAi((p) => ({ ...p, status: "PENDING" }));
+    try {
+      const res = await fetch(`/api/psychologist/entries/${entryId}/ai-summary`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAi((p) => ({ ...p, status: "FAILED" }));
+        throw new Error(data.error || "No se pudo generar el resumen");
+      }
+      setAi({
+        status: data.aiStatus,
+        title: data.aiTitle,
+        summary: data.aiSummary,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error");
+    } finally {
+      setGeneratingAi(false);
+    }
+  }
+
   const transLabel = (() => {
     if (!trans || trans.status === "NOT_REQUESTED") return "Sin solicitar";
     if (trans.status === "PENDING") return "Transcripción pendiente de configuración";
     if (trans.status === "FAILED") return "Falló la transcripción";
     return "Completada";
   })();
+
+  const hasTranscript = Boolean(trans?.text && trans.text.trim().length > 0);
 
   return (
     <div className="space-y-4 border-t border-pulso-mute pt-3">
@@ -103,7 +145,11 @@ export default function EntryControls({
           <button
             type="button"
             onClick={requestTrans}
-            disabled={requestingTrans || trans?.status === "PENDING" || trans?.status === "COMPLETED"}
+            disabled={
+              requestingTrans ||
+              trans?.status === "PENDING" ||
+              trans?.status === "COMPLETED"
+            }
             className="btn-ghost text-sm py-2"
           >
             {requestingTrans
@@ -118,6 +164,66 @@ export default function EntryControls({
           <p className="mt-2 whitespace-pre-wrap text-sm rounded-lg bg-pulso-bg p-3">
             {trans.text}
           </p>
+        )}
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between gap-3">
+          <h5 className="text-sm font-semibold">Título y resumen sugeridos (IA)</h5>
+          {hasTranscript &&
+            (ai.status === "NOT_REQUESTED" || ai.status === "FAILED") && (
+              <button
+                type="button"
+                onClick={generateAi}
+                disabled={generatingAi}
+                className="btn-ghost text-sm py-2"
+              >
+                {generatingAi ? "Generando…" : "Generar título y resumen IA"}
+              </button>
+            )}
+          {hasTranscript && ai.status === "COMPLETED" && (
+            <button
+              type="button"
+              onClick={generateAi}
+              disabled={generatingAi}
+              className="btn-ghost text-sm py-2"
+            >
+              {generatingAi ? "Regenerando…" : "Regenerar"}
+            </button>
+          )}
+        </div>
+
+        {!hasTranscript && (
+          <p className="text-sm text-pulso-soft mt-1">
+            Para generar título/resumen IA, primero pedí la transcripción.
+          </p>
+        )}
+        {hasTranscript && ai.status === "PENDING" && (
+          <p className="text-sm text-pulso-soft mt-1">Generando…</p>
+        )}
+        {hasTranscript && ai.status === "FAILED" && (
+          <p className="text-sm text-red-600 mt-1">
+            Falló la generación. Probá de nuevo.
+          </p>
+        )}
+        {ai.status === "COMPLETED" && (ai.title || ai.summary) && (
+          <div className="mt-2 space-y-2 rounded-lg bg-pulso-bg p-3 text-sm">
+            {ai.title && (
+              <p>
+                <span className="text-pulso-soft">Título sugerido:</span>{" "}
+                <span className="font-medium">{ai.title}</span>
+              </p>
+            )}
+            {ai.summary && (
+              <p>
+                <span className="text-pulso-soft">Resumen de lo dicho:</span>{" "}
+                <span className="whitespace-pre-wrap">{ai.summary}</span>
+              </p>
+            )}
+            <p className="text-xs text-pulso-soft italic">
+              Resumen descriptivo automático. No es interpretación clínica.
+            </p>
+          </div>
         )}
       </section>
 
