@@ -6,12 +6,14 @@ const config: Config = {
     extend: {
       colors: {
         pulso: {
-          bg: "#FAF7F2",
-          ink: "#1F2937",
+          bg: "#F8F7F2",
+          ink: "#1B221F",
           soft: "#6B7280",
-          accent: "#5B7FFF",
+          accent: "#5C8770",
           mute: "#E7E2D8",
           card: "#FFFFFF",
+          ai: "#EAF1EC",
+          highlight: "#C99563",
         },
       },
       fontFamily: {

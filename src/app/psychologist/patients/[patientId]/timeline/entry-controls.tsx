@@ -242,7 +242,7 @@ export default function EntryControls({
           </p>
         )}
         {ai.status === "COMPLETED" && (ai.title || ai.summary) && (
-          <div className="mt-2 space-y-2 rounded-lg bg-pulso-bg p-3 text-sm">
+          <div className="mt-2 space-y-2 rounded-lg bg-pulso-ai p-3 text-sm">
             {ai.title && (
               <p>
                 <span className="text-pulso-soft">Título sugerido:</span>{" "}
