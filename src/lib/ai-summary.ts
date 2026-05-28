@@ -23,7 +23,7 @@ export type DescriptiveSummaryOutput = {
 };
 
 const MAX_TITLE = 80;
-const MAX_SUMMARY = 900;
+const MAX_SUMMARY = 350;
 
 const SYSTEM_PROMPT = `Sos un asistente que describe brevemente lo que un paciente dijo en un audio o video grabado para su psicóloga.
 
@@ -44,6 +44,9 @@ REGLAS ESTRICTAS:
 LÍMITES:
 - aiTitle: máximo ${MAX_TITLE} caracteres.
 - aiSummary: máximo ${MAX_SUMMARY} caracteres.
+
+EXTENSIÓN DEL RESUMEN:
+El resumen debe ser muy breve, útil para escaneo rápido. Máximo 2 frases (idealmente 1). No repetir detalles innecesarios. No enumerar. No reemplaza la transcripción completa: la psicóloga puede leer la transcripción si necesita el detalle.
 
 FORMATO DE SALIDA OBLIGATORIO:
 JSON válido con exactamente estas claves:
