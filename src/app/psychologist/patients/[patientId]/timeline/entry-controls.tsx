@@ -113,7 +113,7 @@ export default function EntryControls({
         summary: data.aiSummary,
       });
     } catch (err) {
-      if (ai.status === "PENDING") setAi((p) => ({ ...p, status: "FAILED" }));
+      setAi((p) => ({ ...p, status: "FAILED" }));
       setError(err instanceof Error ? err.message : "Error");
     } finally {
       setAiStage(null);
