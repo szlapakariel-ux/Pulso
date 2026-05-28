@@ -6,9 +6,9 @@ Asistir a la psicóloga generando, **a pedido**, dos artefactos descriptivos a
 partir de la transcripción de un registro del paciente:
 
 - **`aiTitle`**: título sugerido breve (≤ 80 caracteres).
-- **`aiSummary`**: resumen descriptivo de lo dicho (≤ 900 caracteres).
+- **`aiSummary`**: resumen descriptivo **muy breve** (≤ 350 caracteres, idealmente 1 frase, máximo 2). No reemplaza la transcripción.
 
-La IA describe contenido. **La psicóloga interpreta.**
+La IA describe contenido para escaneo rápido. **La psicóloga interpreta** y consulta la transcripción para el detalle completo.
 
 ## Límites estrictos (qué NO hace la IA)
 
@@ -25,6 +25,12 @@ La IA describe contenido. **La psicóloga interpreta.**
 Si el paciente usa una palabra clínica en su discurso, la IA puede repetirla
 **aclarando que fue dicha por él** (ej: *"El paciente menciona sentirse
 ansioso"*).
+
+## Registros existentes
+
+El cambio de límite y estilo aplica a **nuevas generaciones** y a usos del
+botón **Regenerar**. Los resúmenes ya guardados en la base se mantienen como
+están hasta que la psicóloga los regenere.
 
 ## Dependencia obligatoria
 
@@ -47,22 +53,29 @@ La psicóloga primero pide transcripción, después puede pedir el resumen IA.
 
 ## Ejemplos
 
-### ✅ Correcto
+### ✅ Correcto (breve)
 
 > **Título sugerido:**
-> Comentario sobre el viaje al trabajo
+> Registro sobre la mañana
 >
-> **Resumen de lo dicho:**
-> El paciente comenta que durante el viaje al trabajo se sintió incómodo y que
-> le costó ordenar lo que estaba pensando. Menciona que grabar el audio le
-> sirvió para dejar registrado el momento.
+> **Resumen:**
+> El paciente comenta cómo se sintió durante la mañana y menciona que quiso
+> dejar registrado ese momento para revisarlo luego.
 
-### ❌ Incorrecto (prohibido)
+### ❌ Incorrecto (demasiado largo)
+
+> "El paciente relata múltiples aspectos de su mañana, incluyendo cómo se
+> levantó, qué pensó al desayunar, las sensaciones en el viaje al trabajo, y
+> luego enumera además las personas con las que cruzó palabra…"
+
+Demasiado detalle. Para eso está la transcripción completa.
+
+### ❌ Incorrecto (clínico, prohibido)
 
 > "Se observa ansiedad moderada y sería recomendable trabajar regulación
 > emocional en sesión."
 
-Eso es interpretación clínica. Lo hace la psicóloga, no la IA.
+Interpretación clínica. La hace la psicóloga, no la IA.
 
 ## Arquitectura
 
