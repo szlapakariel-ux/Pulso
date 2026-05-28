@@ -35,6 +35,7 @@ export default function EntryControls({
   const [requestingTrans, setRequestingTrans] = useState(false);
   const [ai, setAi] = useState<AiState>(initialAi);
   const [aiStage, setAiStage] = useState<AiStage>(null);
+  const [showTranscript, setShowTranscript] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function saveNote(e: React.FormEvent) {
@@ -83,6 +84,7 @@ export default function EntryControls({
     setError(null);
     try {
       await ensureTranscription();
+      setShowTranscript(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
     } finally {
@@ -180,10 +182,21 @@ export default function EntryControls({
           </button>
         </div>
         <p className="text-sm text-pulso-soft mt-1">{transLabel}</p>
-        {trans?.text && (
-          <p className="mt-2 whitespace-pre-wrap text-sm rounded-lg bg-pulso-bg p-3">
-            {trans.text}
-          </p>
+        {hasTranscript && (
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setShowTranscript((v) => !v)}
+              className="btn-ghost text-sm py-1"
+            >
+              {showTranscript ? "Ocultar transcripción" : "Ver transcripción"}
+            </button>
+            {showTranscript && trans?.text && (
+              <p className="mt-2 whitespace-pre-wrap text-sm rounded-lg bg-pulso-bg p-3">
+                {trans.text}
+              </p>
+            )}
+          </div>
         )}
       </section>
 
